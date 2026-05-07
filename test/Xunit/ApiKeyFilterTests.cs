@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -26,16 +27,17 @@ namespace Enbrea.ApiKey.Tests
     public class ApiKeyFilterTests
     {
         [Fact]
-        public async Task Denies_When_Missing_Policy_Returns_Unauthorized()
+        public async Task Denies_When_Missing_Policy_Returns_InternalServerError()
         {
             var http = new DefaultHttpContext();
             http.Connection.RemoteIpAddress = IPAddress.Parse("8.8.8.8");
             var ctx = NewContext(http);
 
-            var filter = NewFilter(null, new ApiKeyExtractor(new ApiKeyExtractorOptions()));
+            var filter = NewFilter(null, new ApiKeyExtractor(Options.Create(new ApiKeyExtractorOptions())));
             await filter.OnActionExecutionAsync(ctx, () => Task.FromResult<ActionExecutedContext>(null));
 
-            Assert.IsType<UnauthorizedResult>(ctx.Result);
+            var result = Assert.IsType<StatusCodeResult>(ctx.Result);
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.StatusCode);
         }
 
         [Fact]
@@ -103,10 +105,11 @@ namespace Enbrea.ApiKey.Tests
 
             var ctx = NewContext(http);
 
-            var policy = new ApiKeyPolicy { 
-                AllowLocal = true, 
-                PrivateOnly = false, 
-                Keys = [] 
+            var policy = new ApiKeyPolicy
+            {
+                AllowLocal = true,
+                PrivateOnly = false,
+                Keys = []
             };
             var filter = NewFilter(policy);
 
@@ -155,7 +158,7 @@ namespace Enbrea.ApiKey.Tests
                 PrivateOnly = false
             };
 
-            var filter = NewFilter(policy, new ApiKeyExtractor(new ApiKeyExtractorOptions()));
+            var filter = NewFilter(policy, new ApiKeyExtractor(Options.Create(new ApiKeyExtractorOptions())));
             var nextCalled = false;
             await filter.OnActionExecutionAsync(ctx, async () =>
             {
@@ -167,6 +170,22 @@ namespace Enbrea.ApiKey.Tests
             Assert.Null(ctx.Result);
         }
 
+        [Fact]
+        public void Uses_Registered_PolicyProvider_Instance_From_DI()
+        {
+            DiTrackedPolicyProvider.InstanceCount = 0;
+
+            var services = new ServiceCollection();
+            services.AddSingleton<DiTrackedPolicyProvider>();
+            services.AddSingleton<IApiKeyPolicyProvider>(sp => sp.GetRequiredService<DiTrackedPolicyProvider>());
+            var serviceProvider = services.BuildServiceProvider();
+
+            _ = new ApiKeyFilter(typeof(DiTrackedPolicyProvider), serviceProvider, new ApiKeyExtractor(Options.Create(new ApiKeyExtractorOptions())), new ApiKeyDefaultErrorFactory(), NullLogger<ApiKeyFilter>.Instance);
+            _ = new ApiKeyFilter(typeof(DiTrackedPolicyProvider), serviceProvider, new ApiKeyExtractor(Options.Create(new ApiKeyExtractorOptions())), new ApiKeyDefaultErrorFactory(), NullLogger<ApiKeyFilter>.Instance);
+
+            Assert.Equal(1, DiTrackedPolicyProvider.InstanceCount);
+        }
+        
         private static ActionExecutingContext NewContext(HttpContext httpContext)
         {
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
@@ -178,9 +197,24 @@ namespace Enbrea.ApiKey.Tests
             StaticPolicyProvider.Current = policy;
 
             var services = new ServiceCollection().BuildServiceProvider();
-            extractor ??= new ApiKeyExtractor(new ApiKeyExtractorOptions());
+            extractor ??= new ApiKeyExtractor(Options.Create(new ApiKeyExtractorOptions()));
 
             return new ApiKeyFilter(typeof(StaticPolicyProvider), services, extractor, new ApiKeyDefaultErrorFactory(), NullLogger<ApiKeyFilter>.Instance);
+        }
+
+        private sealed class DiTrackedPolicyProvider : IApiKeyPolicyProvider
+        {
+            public static int InstanceCount;
+
+            public DiTrackedPolicyProvider()
+            {
+                InstanceCount++;
+            }
+
+            public IApiKeyPolicy Get()
+            {
+                return new ApiKeyPolicy();
+            }
         }
     }
 }

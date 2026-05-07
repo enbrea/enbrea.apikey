@@ -19,6 +19,9 @@ namespace Enbrea.ApiKey.Tests
         [InlineData("abc", "abc", true)]
         [InlineData("abc", "abd", false)]
         [InlineData("", "", true)]
+        [InlineData(null, "abc", false)]
+        [InlineData("abc", null, false)]
+        [InlineData(null, null, false)]
         public void FixedTimeEquals_Works(string a, string b, bool expected)
         {
             Assert.Equal(expected, StringHelper.FixedTimeEquals(a, b));

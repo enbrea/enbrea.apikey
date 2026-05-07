@@ -38,7 +38,8 @@ namespace Enbrea.ApiKey
         /// <param name="logger">Logger for audit/diagnostics.</param>
         public ApiKeyFilter(Type apiKeyPolicyProviderType, IServiceProvider serviceProvider, IApiKeyExtractor apiKeyExtractor, IApiKeyErrorResultFactory errorResultFactory, ILogger<ApiKeyFilter> logger)
         {
-            _apiKeyPolicyProvider = (IApiKeyPolicyProvider)ActivatorUtilities.CreateInstance(serviceProvider, apiKeyPolicyProviderType);
+            _apiKeyPolicyProvider = (serviceProvider.GetService(apiKeyPolicyProviderType) as IApiKeyPolicyProvider)
+                ?? (IApiKeyPolicyProvider)ActivatorUtilities.CreateInstance(serviceProvider, apiKeyPolicyProviderType);
             _apiKeyPolicy = _apiKeyPolicyProvider.Get();
             _apiKeyExtractor = apiKeyExtractor;
             _errorResultFactory = errorResultFactory;
@@ -61,7 +62,7 @@ namespace Enbrea.ApiKey
             {
                 _logger.LogError("Missing configuration for api key");
 
-                context.Result = _errorResultFactory.Create(httpContext, ApiKeyError.InvalidKey);
+                context.Result = _errorResultFactory.Create(httpContext, ApiKeyError.Misconfigured);
                 return;
             }
 

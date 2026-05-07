@@ -9,6 +9,7 @@
 #endregion
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using System.Net.Http.Headers;
 
@@ -25,9 +26,14 @@ namespace Enbrea.ApiKey
         /// Initializes a new instance of the <see cref="ApiKeyExtractor"/> class.
         /// </summary>
         /// <param name="options">Behavior configuration</param>
-        public ApiKeyExtractor(ApiKeyExtractorOptions options)
+        public ApiKeyExtractor(IOptions<ApiKeyExtractorOptions> options)
         {
-            _options = options;
+            ArgumentNullException.ThrowIfNull(options);
+
+            _options = options.Value ?? new ApiKeyExtractorOptions();
+            _options.AcceptedAuthSchemes ??= [];
+            _options.AcceptedHeaderNames ??= [];
+            _options.AcceptedQueryParamNames ??= [];
         }
 
         /// <summary>
@@ -44,7 +50,7 @@ namespace Enbrea.ApiKey
             apiKey = null;
 
             // Authorization header: e.g. ApiKey <key>
-            if (fromRequest.Headers.TryGetValue("Authorization", out StringValues authValues))
+            if (_options.AcceptedAuthSchemes.Length > 0 && fromRequest.Headers.TryGetValue("Authorization", out StringValues authValues))
             {
                 foreach (var raw in authValues)
                 {

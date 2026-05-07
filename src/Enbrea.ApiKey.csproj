@@ -6,9 +6,9 @@
     <Description>API Key Authentication for ASP.NET Core</Description>
     <Authors>STÜBER SYSTEMS GmbH</Authors>
     <Company>STÜBER SYSTEMS GmbH</Company>
-    <Copyright>© 2025 STÜBER SYSTEMS GmbH</Copyright>
+    <Copyright>© 2026 STÜBER SYSTEMS GmbH</Copyright>
     <NeutralLanguage></NeutralLanguage>
-    <Version>0.2.0</Version>
+    <Version>0.3.0</Version>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>

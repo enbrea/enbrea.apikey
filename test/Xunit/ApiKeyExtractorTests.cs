@@ -9,6 +9,7 @@
 #endregion
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -28,7 +29,7 @@ namespace Enbrea.ApiKey.Tests
             var req = ctx.Request;
             req.Headers.Authorization = new StringValues(["ApiKey my-secret"]);
 
-            var extractor = new ApiKeyExtractor(opts);
+            var extractor = new ApiKeyExtractor(Options.Create(opts));
             var ok = extractor.TryGetApiKey(req, out var key);
             Assert.True(ok);
             Assert.Equal("my-secret", key);
@@ -46,7 +47,7 @@ namespace Enbrea.ApiKey.Tests
             var req = ctx.Request;
             req.Headers["X-API-KEY"] = "\"secret-123\"";
 
-            var extractor = new ApiKeyExtractor(opts);
+            var extractor = new ApiKeyExtractor(Options.Create(opts));
             var ok = extractor.TryGetApiKey(req, out var key);
             Assert.True(ok);
             Assert.Equal("secret-123", key);
@@ -63,7 +64,7 @@ namespace Enbrea.ApiKey.Tests
             var ctx = new DefaultHttpContext();
             ctx.Request.QueryString = new QueryString("?api_key=abc123");
 
-            var extractor = new ApiKeyExtractor(opts);
+            var extractor = new ApiKeyExtractor(Options.Create(opts));
             var ok = extractor.TryGetApiKey(ctx.Request, out var key);
             Assert.True(ok);
             Assert.Equal("abc123", key);
@@ -76,8 +77,27 @@ namespace Enbrea.ApiKey.Tests
             var ctx = new DefaultHttpContext();
             var req = ctx.Request;
 
-            var extractor = new ApiKeyExtractor(opts);
+            var extractor = new ApiKeyExtractor(Options.Create(opts));
             var ok = extractor.TryGetApiKey(req, out var key);
+            Assert.False(ok);
+            Assert.Null(key);
+        }
+
+        [Fact]
+        public void ReturnsFalse_When_Option_Arrays_Are_Null()
+        {
+            var opts = new ApiKeyExtractorOptions
+            {
+                AcceptedAuthSchemes = null,
+                AcceptedHeaderNames = null,
+                AcceptedQueryParamNames = null
+            };
+
+            var ctx = new DefaultHttpContext();
+            var extractor = new ApiKeyExtractor(Options.Create(opts));
+
+            var ok = extractor.TryGetApiKey(ctx.Request, out var key);
+
             Assert.False(ok);
             Assert.Null(key);
         }

@@ -9,6 +9,7 @@
 #endregion
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Enbrea.ApiKey
 {
@@ -27,7 +28,7 @@ namespace Enbrea.ApiKey
         {
             ArgumentNullException.ThrowIfNull(services);
 
-            services.AddSingleton(new ApiKeyExtractorOptions());
+            services.AddOptions<ApiKeyExtractorOptions>();
             services.AddSingleton<IApiKeyExtractor, ApiKeyExtractor>();
             services.AddSingleton<IApiKeyErrorResultFactory, ApiKeyDefaultErrorFactory>();
             return new ApiKeyServiceBuilder(services);
@@ -46,10 +47,7 @@ namespace Enbrea.ApiKey
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configure);
 
-            var options = new ApiKeyExtractorOptions();
-            configure(options);
-
-            services.AddSingleton(options);
+            services.AddOptions<ApiKeyExtractorOptions>().Configure(configure);
             services.AddSingleton<IApiKeyExtractor, ApiKeyExtractor>();
             services.AddSingleton<IApiKeyErrorResultFactory, ApiKeyDefaultErrorFactory>();
             return new ApiKeyServiceBuilder(services);

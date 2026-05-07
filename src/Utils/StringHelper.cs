@@ -28,6 +28,11 @@ namespace Enbrea.ApiKey
         /// <returns>TRUE if equal, otherwise FALSE</returns>
         public static bool FixedTimeEquals(string left, string right)
         {
+            if (left is null || right is null)
+            {
+                return false;
+            }
+
             var lBytes = System.Text.Encoding.UTF8.GetBytes(left);
             var rBytes = System.Text.Encoding.UTF8.GetBytes(right);
             return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(lBytes, rBytes);

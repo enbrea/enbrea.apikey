@@ -18,17 +18,17 @@ namespace Enbrea.ApiKey
         /// <summary>
         /// Accepted Authorization header schemes for carrying the API key
         /// </summary>
-        public string[] AcceptedAuthSchemes = { "ApiKey" };
+        public string[] AcceptedAuthSchemes { get; set; } = ["ApiKey"];
 
         /// <summary>
         /// Accepted custom header names that may contain the API key
         /// </summary>
-        public string[] AcceptedHeaderNames = { "X-API-KEY" };
+        public string[] AcceptedHeaderNames { get; set; } = ["X-API-KEY"];
 
         /// <summary>
         /// Accepted URL query field names that may contain the API key
         /// </summary>
-        public string[] AcceptedQueryParamNames = [];
+        public string[] AcceptedQueryParamNames { get; set; } = [];
     }
 }
 
