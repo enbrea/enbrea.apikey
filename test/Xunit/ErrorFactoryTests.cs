@@ -51,5 +51,23 @@ namespace Enbrea.ApiKey.Tests
             Assert.Contains("Unauthorized", pd.Title);
             Assert.Equal(http.Request.Path, pd.Instance);
         }
+
+        [Fact]
+        public void ProblemDetailsFactory_Differentiates_Missing_And_Invalid_Key_Details()
+        {
+            var http = new DefaultHttpContext();
+            var problemFactory = new TestProblemDetailsFactory();
+            var f = new ApiKeyProblemDetailsFactory(problemFactory);
+
+            var missingResult = Assert.IsType<ObjectResult>(f.Create(http, ApiKeyError.MissingKey));
+            var missing = Assert.IsType<ProblemDetails>(missingResult.Value);
+            Assert.Equal(StatusCodes.Status401Unauthorized, missingResult.StatusCode);
+            Assert.Equal("An API key is required.", missing.Detail);
+
+            var invalidResult = Assert.IsType<ObjectResult>(f.Create(http, ApiKeyError.InvalidKey));
+            var invalid = Assert.IsType<ProblemDetails>(invalidResult.Value);
+            Assert.Equal(StatusCodes.Status401Unauthorized, invalidResult.StatusCode);
+            Assert.Equal("The provided API key is invalid.", invalid.Detail);
+        }
     }
 }

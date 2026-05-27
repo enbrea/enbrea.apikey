@@ -52,11 +52,19 @@ namespace Enbrea.ApiKey
                     type: "https://tools.ietf.org/html/rfc9110#section-15.5.5",
                     title: "Not found"),
 
+                ApiKeyError.MissingKey => Problem(
+                    httpContext,
+                    statusCode: StatusCodes.Status401Unauthorized,
+                    type: "https://tools.ietf.org/html/rfc9110#section-15.5.2",
+                    title: "Unauthorized",
+                    detail: "An API key is required."),
+
                 ApiKeyError.InvalidKey => Problem(
                     httpContext,
                     statusCode: StatusCodes.Status401Unauthorized,
                     type: "https://tools.ietf.org/html/rfc9110#section-15.5.2",
-                    title: "Unauthorized"),
+                    title: "Unauthorized",
+                    detail: "The provided API key is invalid."),
 
                 _ => Problem(
                     httpContext,

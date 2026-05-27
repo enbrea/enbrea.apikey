@@ -37,6 +37,7 @@ namespace Enbrea.ApiKey
             {
                 ApiKeyError.Misconfigured => new StatusCodeResult(StatusCodes.Status500InternalServerError),
                 ApiKeyError.PrivateOnlyDenied => new NotFoundResult(),
+                ApiKeyError.MissingKey => new UnauthorizedResult(),
                 ApiKeyError.InvalidKey => new UnauthorizedResult(),
                 _ => new StatusCodeResult(StatusCodes.Status500InternalServerError)
             };

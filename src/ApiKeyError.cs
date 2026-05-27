@@ -14,6 +14,7 @@ namespace Enbrea.ApiKey
     {
         Misconfigured, 
         PrivateOnlyDenied, 
+        MissingKey,
         InvalidKey 
     }
 }

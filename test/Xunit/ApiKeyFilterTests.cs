@@ -142,6 +142,22 @@ namespace Enbrea.ApiKey.Tests
         }
 
         [Fact]
+        public async Task PublicMode_With_Missing_Key_Denies_Unauthorized()
+        {
+            var http = new DefaultHttpContext();
+            http.Connection.RemoteIpAddress = IPAddress.Parse("8.8.8.8");
+
+            var ctx = NewContext(http);
+
+            var policy = new ApiKeyPolicy { Keys = ["good"] };
+            var filter = NewFilter(policy);
+
+            await filter.OnActionExecutionAsync(ctx, () => Task.FromResult<ActionExecutedContext>(null));
+
+            Assert.IsType<UnauthorizedResult>(ctx.Result);
+        }
+
+        [Fact]
         public async Task PublicMode_With_Valid_Key_Allows()
         {
             var http = new DefaultHttpContext();

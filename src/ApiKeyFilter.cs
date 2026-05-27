@@ -115,12 +115,15 @@ namespace Enbrea.ApiKey
                                 return;
                             }
                         }
+
+                        _logger.LogWarning("Invalid API key for {Path} from {RemoteIp}", httpContext.Request.Path, remoteIp);
+                        context.Result = _errorResultFactory.Create(httpContext, ApiKeyError.InvalidKey);
+                        return;
                     }
                 }
 
-                _logger.LogWarning("Unauthorized health access to {Path} from {RemoteIp}", httpContext.Request.Path, remoteIp);
-
-                context.Result = _errorResultFactory.Create(httpContext, ApiKeyError.InvalidKey);
+                _logger.LogWarning("Missing API key for {Path} from {RemoteIp}", httpContext.Request.Path, remoteIp);
+                context.Result = _errorResultFactory.Create(httpContext, ApiKeyError.MissingKey);
                 return;
             }
 

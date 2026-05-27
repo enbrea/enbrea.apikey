@@ -97,8 +97,7 @@ namespace Enbrea.ApiKey
 
             return false;
 
-            static string Normalize(string s)
-                => string.IsNullOrWhiteSpace(s) ? null : s.Trim().Trim('"'); 
+            static string Normalize(string s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim().Trim('"'); 
         }
     }
 }

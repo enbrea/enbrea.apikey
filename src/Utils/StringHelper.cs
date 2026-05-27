@@ -9,6 +9,7 @@
 #endregion
 
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 
 namespace Enbrea.ApiKey
@@ -35,7 +36,7 @@ namespace Enbrea.ApiKey
 
             var lBytes = System.Text.Encoding.UTF8.GetBytes(left);
             var rBytes = System.Text.Encoding.UTF8.GetBytes(right);
-            return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(lBytes, rBytes);
+            return CryptographicOperations.FixedTimeEquals(lBytes, rBytes);
         }
 
         /// <summary>
